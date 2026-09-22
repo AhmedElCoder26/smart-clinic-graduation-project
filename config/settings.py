@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.clinic',
     'apps.ai_agent',
 ]
+AUTH_USER_MODEL = 'authentication.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

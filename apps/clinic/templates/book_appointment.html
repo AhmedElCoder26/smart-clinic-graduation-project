@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Appointment</title>
+</head>
+<body>
+    <h1>Book Appointment with Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label>Date:</label>
+        <input type="date" name="date" required><br>
+        <label>Time:</label>
+        <input type="time" name="time" required><br>
+        <label>Notes:</label><br>
+        <textarea name="notes"></textarea><br>
+        <button type="submit">Confirm Booking</button>
+    </form>
+    <a href="{% url 'doctor_list' %}">Back to Doctors</a>
+</body>
+</html>

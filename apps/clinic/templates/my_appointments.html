@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Appointments</title>
+</head>
+<body>
+    <h1>My Appointments</h1>
+    <a href="{% url 'home' %}">Home</a>
+    <ul>
+        {% for appt in appointments %}
+            <li>
+                Dr. {{ appt.doctor.user.get_full_name|default:appt.doctor.user.username }}
+                - {{ appt.date }} at {{ appt.time }}
+                - Status: {{ appt.status }}
+            </li>
+        {% empty %}
+            <p>You have no appointments yet.</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>

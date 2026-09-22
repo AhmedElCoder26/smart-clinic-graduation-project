@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Our Doctors</title>
+</head>
+<body>
+    <h1>Our Doctors</h1>
+    <a href="{% url 'home' %}">Home</a>
+    <ul>
+        {% for doctor in doctors %}
+            <li>
+                <strong>Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</strong>
+                - {{ doctor.specialization.name }}
+                - Fee: {{ doctor.consultation_fee }}
+                <br>
+                {{ doctor.bio }}
+                <br>
+                <a href="{% url 'book_appointment' doctor.id %}">Book Appointment</a>
+            </li>
+        {% empty %}
+            <p>No doctors available yet.</p>
+        {% endfor %}
+    </ul>
+</body>
+</html>

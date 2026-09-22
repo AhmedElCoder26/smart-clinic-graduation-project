@@ -1,9 +1,9 @@
 from datetime import datetime
-from apps.clinic.models import Appointment, Doctor, Patient
+from apps.clinic.models import Doctor, Patient, Appointment
+from apps.clinic import services as clinic_services
 
 
 def get_my_appointments(user):
-    """Returns all appointments for the logged-in patient."""
     patient = Patient.objects.filter(user=user).first()
     if not patient:
         return {"error": "No patient profile found for this user."}
@@ -22,26 +22,18 @@ def get_my_appointments(user):
 
 
 def cancel_appointment(user, appointment_id):
-    """Cancels a specific appointment, only if it belongs to the requesting user."""
     patient = Patient.objects.filter(user=user).first()
     if not patient:
         return {"error": "No patient profile found for this user."}
 
-    appointment = Appointment.objects.filter(id=appointment_id, patient=patient).first()
-    if not appointment:
-        return {"error": "Appointment not found or does not belong to you."}
-
-    appointment.status = Appointment.Status.CANCELLED
-    appointment.save()
+    success, error = clinic_services.cancel_appointment_for_patient(patient, appointment_id)
+    if not success:
+        return {"error": error}
     return {"success": f"Appointment #{appointment_id} has been cancelled."}
 
 
 def search_doctors(specialization_name=None):
-    """Searches for doctors, optionally filtered by specialization."""
-    doctors = Doctor.objects.all()
-    if specialization_name:
-        doctors = doctors.filter(specialization__name__icontains=specialization_name)
-
+    doctors = clinic_services.find_doctors(specialization_name)
     result = []
     for doc in doctors:
         result.append({
@@ -51,3 +43,36 @@ def search_doctors(specialization_name=None):
             "fee": str(doc.consultation_fee),
         })
     return {"doctors": result}
+
+
+def book_appointment(user, doctor_id, date, time, notes=""):
+    """Books an appointment for the current authenticated patient with the given doctor."""
+    patient = Patient.objects.filter(user=user).first()
+    if not patient:
+        return {"error": "No patient profile found for this user."}
+
+    doctor = Doctor.objects.filter(id=doctor_id).first()
+    if not doctor:
+        return {"error": f"No doctor found with id {doctor_id}."}
+
+    try:
+        appt_date = datetime.strptime(date, "%Y-%m-%d").date()
+        appt_time = datetime.strptime(time, "%H:%M").time()
+    except ValueError:
+        return {"error": "Invalid date or time format. Use YYYY-MM-DD and HH:MM."}
+
+    appointment, error = clinic_services.create_appointment(
+        patient=patient, doctor=doctor, date=appt_date, time=appt_time,
+        notes=notes, booked_by=user
+    )
+    if error:
+        return {"error": error}
+
+    return {
+        "success": True,
+        "appointment_id": appointment.id,
+        "doctor": doctor.user.get_full_name() or doctor.user.username,
+        "date": str(appointment.date),
+        "time": str(appointment.time),
+        "status": appointment.status,
+    }

@@ -34,12 +34,27 @@ TOOL_DEFINITIONS = [
             },
         },
     },
+    {
+        "name": "book_appointment",
+        "description": "Book an appointment for the current patient with a specific doctor, date and time. Only call this after the user has clearly confirmed the doctor, date and time.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "doctor_id": {"type": "integer", "description": "The ID of the doctor to book with."},
+                "date": {"type": "string", "description": "Appointment date in YYYY-MM-DD format."},
+                "time": {"type": "string", "description": "Appointment time in HH:MM 24-hour format."},
+                "notes": {"type": "string", "description": "Optional notes for the appointment."},
+            },
+            "required": ["doctor_id", "date", "time"],
+        },
+    },
 ]
 
 AVAILABLE_FUNCTIONS = {
     "get_my_appointments": tools.get_my_appointments,
     "cancel_appointment": tools.cancel_appointment,
     "search_doctors": tools.search_doctors,
+    "book_appointment": tools.book_appointment,
 }
 
 
@@ -65,6 +80,14 @@ def run_agent(user, user_message):
             result = AVAILABLE_FUNCTIONS[function_name](user, function_args.get("appointment_id"))
         elif function_name == "search_doctors":
             result = AVAILABLE_FUNCTIONS[function_name](function_args.get("specialization_name"))
+        elif function_name == "book_appointment":
+            result = AVAILABLE_FUNCTIONS[function_name](
+                user,
+                function_args.get("doctor_id"),
+                function_args.get("date"),
+                function_args.get("time"),
+                function_args.get("notes", ""),
+            )
         else:
             result = AVAILABLE_FUNCTIONS[function_name](user)
 

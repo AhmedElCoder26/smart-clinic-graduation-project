@@ -68,10 +68,15 @@ def run_agent(user, user_message):
     chat = model.start_chat()
     response = chat.send_message(user_message)
 
-    # Check if Gemini wants to call a tool
-    part = response.candidates[0].content.parts[0]
+    # Keep looping as long as Gemini keeps requesting tool calls
+    max_turns = 5
+    for _ in range(max_turns):
+        part = response.candidates[0].content.parts[0]
 
-    if hasattr(part, "function_call") and part.function_call.name:
+        if not (hasattr(part, "function_call") and part.function_call and part.function_call.name):
+            # No more tool calls, this is the final natural-language answer
+            return response.text
+
         function_name = part.function_call.name
         function_args = dict(part.function_call.args)
 
@@ -91,8 +96,8 @@ def run_agent(user, user_message):
         else:
             result = AVAILABLE_FUNCTIONS[function_name](user)
 
-        # Send the tool result back to Gemini to get a natural language answer
-        final_response = chat.send_message(
+        # Send the tool result back to Gemini; it may reply with text or ask for another tool
+        response = chat.send_message(
             genai.protos.Content(
                 parts=[genai.protos.Part(
                     function_response=genai.protos.FunctionResponse(
@@ -102,6 +107,5 @@ def run_agent(user, user_message):
                 )]
             )
         )
-        return final_response.text
 
-    return response.text
+    return "Sorry, I couldn't complete that request after multiple attempts. Please try rephrasing."

@@ -1,26 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Our Doctors</title>
-</head>
-<body>
-    <h1>Our Doctors</h1>
-    <a href="{% url 'home' %}">Home</a>
-    <ul>
-        {% for doctor in doctors %}
-            <li>
-                <strong>Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</strong>
-                - {{ doctor.specialization.name }}
-                - Fee: {{ doctor.consultation_fee }}
-                <br>
-                {{ doctor.bio }}
-                <br>
-                <a href="{% url 'book_appointment' doctor.id %}">Book Appointment</a>
-            </li>
-        {% empty %}
-            <p>No doctors available yet.</p>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Our Doctors - Smart Clinic{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 fw-bold">Our Doctors</h2>
+
+<div class="row g-4">
+    {% for doctor in doctors %}
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                {% if doctor.photo %}
+                    <img src="{{ doctor.photo.url }}" class="card-img-top" style="height:220px; object-fit:cover;" alt="{{ doctor.user.username }}">
+                {% else %}
+                    <div class="bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center" style="height:220px;">
+                        <span class="display-4">🩺</span>
+                    </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</h5>
+                    <p class="mb-1">
+                        <span class="badge bg-primary-subtle text-primary">{{ doctor.specialization.name|default:"General" }}</span>
+                    </p>
+                    <p class="text-muted small flex-grow-1">{{ doctor.bio|default:"No biography provided."|truncatewords:20 }}</p>
+                    <p class="fw-bold mb-2">Fee: ${{ doctor.consultation_fee }}</p>
+                    <a href="{% url 'book_appointment' doctor.id %}" class="btn btn-primary mt-auto">Book Appointment</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">No doctors available yet. Please check back later.</div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

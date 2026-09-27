@@ -58,14 +58,25 @@ AVAILABLE_FUNCTIONS = {
 }
 
 
-def run_agent(user, user_message):
+def run_agent(user, user_message, history=None):
     model = genai.GenerativeModel(
         model_name="gemini-3.8-flash",
         system_instruction=SYSTEM_PROMPT,
         tools=[{"function_declarations": TOOL_DEFINITIONS}],
     )
 
-    chat = model.start_chat()
+    # Rebuild previous conversation turns (text-only) so Gemini remembers context
+    gemini_history = []
+    if history:
+        for turn in history:
+            gemini_history.append(
+                genai.protos.Content(
+                    role=turn["role"],
+                    parts=[genai.protos.Part(text=turn["text"])]
+                )
+            )
+
+    chat = model.start_chat(history=gemini_history)
     response = chat.send_message(user_message)
 
     # Keep looping as long as Gemini keeps requesting tool calls

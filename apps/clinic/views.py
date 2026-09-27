@@ -39,3 +39,13 @@ def my_appointments(request):
     patient = Patient.objects.filter(user=request.user).first()
     appointments = Appointment.objects.filter(patient=patient) if patient else []
     return render(request, 'clinic/my_appointments.html', {'appointments': appointments})
+@login_required
+def cancel_appointment_view(request, appointment_id):
+    patient = Patient.objects.filter(user=request.user).first()
+    if patient:
+        success, error = services.cancel_appointment_for_patient(patient, appointment_id)
+        if success:
+            messages.success(request, 'Appointment cancelled successfully.')
+        else:
+            messages.error(request, error)
+    return redirect('my_appointments')

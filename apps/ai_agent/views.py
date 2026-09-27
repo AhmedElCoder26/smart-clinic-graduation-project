@@ -18,10 +18,16 @@ def chat_api(request):
         data = json.loads(request.body)
         user_message = data.get('message', '')
 
+        history = request.session.get('chat_history', [])
+
         try:
-            reply = run_agent(request.user, user_message)
+            reply = run_agent(request.user, user_message, history)
         except Exception as e:
             reply = f"Sorry, something went wrong: {str(e)}"
+
+        history.append({"role": "user", "text": user_message})
+        history.append({"role": "model", "text": reply})
+        request.session['chat_history'] = history[-20:]  # keep last 20 turns only
 
         return JsonResponse({'reply': reply})
 

@@ -1,27 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}Login - Smart Clinic{% endblock %}
 
-<head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-</head>
-
-<body>
-  <h1>Login</h1>
-  {% if messages %}
-  {% for message in messages %}
-  <p style="color: red;">{{ message }}</p>
-  {% endfor %}
-  {% endif %}
-  <form method="post">
-    {% csrf_token %}
-    <label>Username:</label>
-    <input type="text" name="username" required><br>
-    <label>Password:</label>
-    <input type="password" name="password" required><br>
-    <button type="submit">Login</button>
-  </form>
-  <a href="{% url 'register' %}">Don't have an account? Register</a>
-</body>
-
-</html>
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4 text-center">Login</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+                <p class="text-center mt-3 mb-0">
+                    <a href="{% url 'register' %}">Don't have an account? Register</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
